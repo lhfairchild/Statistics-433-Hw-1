@@ -1,0 +1,42 @@
+---
+title: "Stat 433 HW1"
+author: "Luke Fairchild"
+date: '2022-09-27'
+output: github document
+---
+
+```{r}
+library(nycflights13)
+library(tidyverse)
+##Q1
+missing <- flights[is.na(flights$dep_time),]
+```
+There are 8255 flights that did not have a departure time. In this data frame, the values for departure delay, arrival time, arrival delay, and air time are all missing as well. These rows could represent flights that were cancelled. 
+
+```{r}
+##Q2
+time_df = flights%>%
+  mutate(dep_time = case_when(
+    dep_time < 1000 ~ as.numeric(substr(dep_time,1,1))*60+as.numeric(substr(dep_time,2,3)),     
+    dep_time >= 1000 ~
+      as.numeric(substr(dep_time,1,2)) *60+as.numeric(substr(dep_time,3,4))))%>%
+  mutate(sched_dep_time = case_when(
+    sched_dep_time < 1000 ~ as.numeric(substr(sched_dep_time,1,1))*60+as.numeric(substr(sched_dep_time,2,3)),     sched_dep_time >= 1000 ~ 
+    as.numeric(substr(sched_dep_time,1,2))*60+as.numeric(substr(sched_dep_time,3,4))))
+
+```
+
+
+```{r}
+ cancelled <- flights %>%
+  mutate(num_cancelled = (is.na(dep_time)))%>%
+  group_by(year,month,day) %>%
+  summarise(
+    total_cancelled = sum(num_cancelled),
+    flights = n(),
+    prop_cancelled = mean(num_cancelled),
+    avg_dep_delay = mean(dep_delay, na.rm = TRUE))
+ggplot(cancelled,aes(x= avg_dep_delay,y = prop_cancelled)) + geom_point()
+ggplot(cancelled,aes(x=flights,y=total_cancelled))+geom_point()
+```
+Q3. It appears that as there are more flights, there tends to be more cancellations. It also appears that as the average departure delay goes up, the proportion of flights that are cancelled goes up as well. 
